@@ -1,5 +1,6 @@
 import twitter
 import re
+import time
 import sys
 
 api = twitter.Api(consumer_key='consumer_key',
@@ -55,15 +56,23 @@ def parseTweet(tweet):
 
 
 def reconcileScores(team_a_scores, team_b_scores):
-    if len(team_a_scores) > 0:
+    now = int(time.time())
+    team_a_date = 0
+    team_b_date = 0
+    if len(team_a_scores) == 0 & len(team_b_scores) == 0:
+        score = [0, 0]
+        return score
+    elif len(team_a_scores) > 0:
         team_a_latest_score = team_a_scores[0][0]
         team_a_date = team_a_scores[0][1]
         team_a_score_total = team_a_latest_score[0] + team_a_latest_score[1]
-    if len(team_b_scores) > 0:
+    elif len(team_b_scores) > 0:
         team_b_latest_score = team_b_scores[0][0]
         team_b_date = team_b_scores[0][1]
         team_b_score_total = team_b_latest_score[0] + team_b_latest_score[1]
-    if len(team_a_scores) == 0:
+    if ((now - team_a_date) > 720) & ((now - team_b_date) > 720):
+        score = [0, 0]
+    elif len(team_a_scores) == 0:
         score = [team_b_latest_score[1], team_b_latest_score[0]]
     elif len(team_b_scores) == 0:
         score = team_a_latest_score
