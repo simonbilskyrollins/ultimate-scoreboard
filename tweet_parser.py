@@ -1,12 +1,21 @@
+import ConfigParser
 import twitter
 import re
 import time
 import sys
 
-api = twitter.Api(consumer_key='consumer_key',
-                  consumer_secret='consumer_secret',
-                  access_token_key='access_token_key',
-                  access_token_secret='access_token_secret')
+config = ConfigParser.RawConfigParser()
+config.read('twitter.cfg')
+
+token = config.get('Twitter API', 'token')
+token_key = config.get('Twitter API', 'token_key')
+consumer_key = config.get('Twitter API', 'consumer_key')
+consumer_secret = config.get('Twitter API', 'consumer_secret')
+
+api = twitter.Api(consumer_key=consumer_key,
+                  consumer_secret=consumer_secret,
+                  access_token_key=token,
+                  access_token_secret=token_key)
 
 team_accounts = {'Carleton': 'cutrules',
                  'Wisconsin': 'hodaglove',
@@ -27,11 +36,12 @@ team_accounts = {'Carleton': 'cutrules',
                  'Harvard': 'HarvardRedLine',
                  'Washington': 'sundodgers',
                  'Pittsburgh': 'Pittultimate',
-                 'Georgia': 'jojahultimate'}
+                 'Georgia': 'jojahultimate',
+                 'Florida': 'FloridaUltimate'}
 
 
 def getTeamTweets(team_account):
-    query = 'q=from%3A' + team_account + '&src=typd&count=5&exclude_replies=true&include_rts=false'
+    query = 'q=from%3A' + team_account + '%20-filter%3Aretweets%20-filter%3Areplies'
     results = api.GetSearch(raw_query=query)
     tweets = []
     for i in range(5):
