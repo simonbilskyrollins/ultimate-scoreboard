@@ -102,27 +102,38 @@ def getScore(team_a, team_b):
     team_b_account = team_accounts[team_b]
     team_a_tweets = getTeamTweets(team_a_account)
     team_b_tweets = getTeamTweets(team_b_account)
-    team_a_scores = []
-    for tweet_obj in team_a_tweets:
-        tweet = tweet_obj[0]
-        date = tweet_obj[1]
-        score = parseTweet(tweet)
-        if score:
-            team_a_scores.append([score, date])
-    team_b_scores = []
-    for tweet_obj in team_b_tweets:
-        tweet = tweet_obj[0]
-        date = tweet_obj[1]
-        score = parseTweet(tweet)
-        if score:
-            team_b_scores.append([score, date])
+    team_a_scores = extractTeamScores(team_a_tweets)
+    team_b_scores = extractTeamScores(team_b_tweets)
     score = reconcileScores(team_a_scores, team_b_scores)
     team_a_score = score[0]
     team_b_score = score[1]
-    return '%s %s - %s %s' % (team_a, str(team_a_score), str(team_b_score), team_b)
+    print '%s %s - %s %s' % (team_a, str(team_a_score), str(team_b_score), team_b)
+
+
+def getSingleScore(team):
+    team_account = team_accounts[team]
+    team_tweets = getTeamTweets(team_account)
+    team_scores = extractTeamScores(team_tweets)
+    score = team_scores[0][0]
+    print '%s %s - %s Faceless Opponent' % (team, str(score[0]), str(score[1]))
+
+
+def extractTeamScores(team_tweets):
+    team_scores = []
+    for tweet_obj in team_tweets:
+        tweet = tweet_obj[0]
+        date = tweet_obj[1]
+        score = parseTweet(tweet)
+        if score:
+            team_scores.append([score, date])
+    return team_scores
 
 
 if __name__ == "__main__":
-    team_a = sys.argv[1]
-    team_b = sys.argv[2]
-    print getScore(team_a, team_b)
+    if len(sys.argv) >= 3:
+        team_a = sys.argv[1]
+        team_b = sys.argv[2]
+        getScore(team_a, team_b)
+    elif len(sys.argv) == 2:
+        team_a = sys.argv[1]
+        getSingleScore(team_a)
