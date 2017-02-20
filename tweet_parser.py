@@ -28,6 +28,27 @@ def getTeamAccounts():
     return team_accounts
 
 
+def getScore(team_a, team_b):
+    team_a_account = team_accounts[team_a]
+    team_b_account = team_accounts[team_b]
+    team_a_tweets = getTeamTweets(team_a_account)
+    team_b_tweets = getTeamTweets(team_b_account)
+    team_a_scores = extractTeamScores(team_a_tweets)
+    team_b_scores = extractTeamScores(team_b_tweets)
+    score = reconcileScores(team_a_scores, team_b_scores)
+    team_a_score = score[0]
+    team_b_score = score[1]
+    print '%s %s - %s %s' % (team_a, str(team_a_score), str(team_b_score), team_b)
+
+
+def getSingleScore(team):
+    team_account = team_accounts[team]
+    team_tweets = getTeamTweets(team_account)
+    team_scores = extractTeamScores(team_tweets)
+    score = team_scores[0][0]
+    print '%s %s - %s Faceless Opponent' % (team, str(score[0]), str(score[1]))
+
+
 def getTeamTweets(team_account):
     query = 'q=from%3A' + team_account + '%20-filter%3Aretweets%20-filter%3Areplies'
     results = api.GetSearch(raw_query=query)
@@ -35,6 +56,17 @@ def getTeamTweets(team_account):
     for i in range(5):
         tweets.append([results[i].text, results[i].created_at_in_seconds])
     return tweets
+
+
+def extractTeamScores(team_tweets):
+    team_scores = []
+    for tweet_obj in team_tweets:
+        tweet = tweet_obj[0]
+        date = tweet_obj[1]
+        score = parseTweet(tweet)
+        if score:
+            team_scores.append([score, date])
+    return team_scores
 
 
 def parseTweet(tweet):
@@ -83,38 +115,6 @@ def reconcileScores(team_a_scores, team_b_scores):
     else:
         score = [team_b_latest_score[1], team_b_latest_score[0]]
     return score
-
-
-def getScore(team_a, team_b):
-    team_a_account = team_accounts[team_a]
-    team_b_account = team_accounts[team_b]
-    team_a_tweets = getTeamTweets(team_a_account)
-    team_b_tweets = getTeamTweets(team_b_account)
-    team_a_scores = extractTeamScores(team_a_tweets)
-    team_b_scores = extractTeamScores(team_b_tweets)
-    score = reconcileScores(team_a_scores, team_b_scores)
-    team_a_score = score[0]
-    team_b_score = score[1]
-    print '%s %s - %s %s' % (team_a, str(team_a_score), str(team_b_score), team_b)
-
-
-def getSingleScore(team):
-    team_account = team_accounts[team]
-    team_tweets = getTeamTweets(team_account)
-    team_scores = extractTeamScores(team_tweets)
-    score = team_scores[0][0]
-    print '%s %s - %s Faceless Opponent' % (team, str(score[0]), str(score[1]))
-
-
-def extractTeamScores(team_tweets):
-    team_scores = []
-    for tweet_obj in team_tweets:
-        tweet = tweet_obj[0]
-        date = tweet_obj[1]
-        score = parseTweet(tweet)
-        if score:
-            team_scores.append([score, date])
-    return team_scores
 
 
 if __name__ == "__main__":
