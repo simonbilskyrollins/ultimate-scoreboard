@@ -1,43 +1,31 @@
 import ConfigParser
+import json
 import twitter
 import re
 import time
 import sys
 
-config = ConfigParser.RawConfigParser()
-config.read('twitter.cfg')
 
-token = config.get('Twitter API', 'token')
-token_key = config.get('Twitter API', 'token_key')
-consumer_key = config.get('Twitter API', 'consumer_key')
-consumer_secret = config.get('Twitter API', 'consumer_secret')
+def setupTwitter():
+    config = ConfigParser.RawConfigParser()
+    config.read('twitter.cfg')
 
-api = twitter.Api(consumer_key=consumer_key,
-                  consumer_secret=consumer_secret,
-                  access_token_key=token,
-                  access_token_secret=token_key)
+    token = config.get('Twitter API', 'token')
+    token_key = config.get('Twitter API', 'token_key')
+    consumer_key = config.get('Twitter API', 'consumer_key')
+    consumer_secret = config.get('Twitter API', 'consumer_secret')
 
-team_accounts = {'Carleton': 'cutrules',
-                 'Wisconsin': 'hodaglove',
-                 'UNC-Wilmington': 'seamenultimate',
-                 'Auburn': 'AuburnUltimate',
-                 'Cal Poly-SLO': 'CORE_ultimate',
-                 'Connecticut': 'UConnGrind',
-                 'Case Western Reserve': 'FightingGobies',
-                 'Massachusetts': 'UMassUltimate',
-                 'Utah': 'ZCU_Ultimate',
-                 'North Carolina': 'UNC_Darkside',
-                 'Florida State': 'DUFtrainroll',
-                 'Texas A&M': 'DozenUltimate',
-                 'Michigan': 'magnUMultimate',
-                 'Minnesota': '1Duck1Love',
-                 'Oregon': 'egotime',
-                 'Colorado': 'CUMamabird',
-                 'Harvard': 'HarvardRedLine',
-                 'Washington': 'sundodgers',
-                 'Pittsburgh': 'Pittultimate',
-                 'Georgia': 'jojahultimate',
-                 'Florida': 'FloridaUltimate'}
+    api = twitter.Api(consumer_key=consumer_key,
+                      consumer_secret=consumer_secret,
+                      access_token_key=token,
+                      access_token_secret=token_key)
+    return api
+
+
+def getTeamAccounts():
+    with open('team_accounts.json', 'rb') as jsonfile:
+        team_accounts = json.loads(jsonfile.read())
+    return team_accounts
 
 
 def getTeamTweets(team_account):
@@ -130,6 +118,8 @@ def extractTeamScores(team_tweets):
 
 
 if __name__ == "__main__":
+    api = setupTwitter()
+    team_accounts = getTeamAccounts()
     if len(sys.argv) >= 3:
         team_a = sys.argv[1]
         team_b = sys.argv[2]
