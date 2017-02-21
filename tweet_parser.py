@@ -3,7 +3,7 @@ import json
 import twitter
 import re
 import time
-import sys
+import argparse
 
 
 def setupTwitter():
@@ -26,6 +26,14 @@ def getTeamAccounts():
     with open('team_accounts.json', 'rb') as jsonfile:
         team_accounts = json.loads(jsonfile.read())
     return team_accounts
+
+
+def addTeamAccount(team_name, team_account):
+    if team_account[0] == '@':
+        team_account = team_account[1:]
+    team_accounts[team_name] = team_account
+    with open('team_accounts.json', 'wb') as jsonfile:
+        jsonfile.write(json.dumps(team_accounts, sort_keys=True, indent=4, separators=(',', ': ')))
 
 
 def getScore(team_a, team_b):
@@ -118,12 +126,30 @@ def reconcileScores(team_a_scores, team_b_scores):
 
 
 if __name__ == "__main__":
+    parser = argparse.ArgumentParser(description='Get the score of a college ultimate game directly from teams\' Twitter feeds')
+    subparsers = parser.add_subparsers(dest='command', help='Choose whether you want to check a score or add a team')
+    score_parser = subparsers.add_parser('score', help='Check the score of a game')
+    score_parser.add_argument('team_a', metavar='TEAM1', type=str, help='The first team')
+    score_parser.add_argument('team_b', metavar='TEAM2', type=str, nargs='?', help='The second team')
+    new_parser = subparsers.add_parser('add-team', help='Add a new team Twitter account to the database')
+    new_parser.add_argument('team_name', metavar='TEAM', type=str)
+    new_parser.add_argument('team_account', metavar='@HANDLE', type=str)
+    args = parser.parse_args()
+    print args
+
     api = setupTwitter()
     team_accounts = getTeamAccounts()
-    if len(sys.argv) >= 3:
-        team_a = sys.argv[1]
-        team_b = sys.argv[2]
-        getScore(team_a, team_b)
-    elif len(sys.argv) == 2:
-        team_a = sys.argv[1]
-        getSingleScore(team_a)
+
+    if args.command == 'score':
+        if args.team_b:
+            team_a = args.team_a
+            team_b = args.team_b
+            getScore(team_a, team_b)
+        elif args.team_a:
+            team_a = args.team_a
+            getSingleScore(team_a)
+    elif args.command == 'add-team':
+        team_name = args.team_name
+        team_account = args.team_account
+        addTeamAccount(team_name, team_account)
+        print 'Added %s to database' % team_name
